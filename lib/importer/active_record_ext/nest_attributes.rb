@@ -18,7 +18,14 @@ module Importer
 
             memo[nested_key] ||= {}
             memo[nested_key][index] ||= {}
-            memo[nested_key][index].deep_merge!(nest_attributes(sub_key => v))
+
+            sub_attributes = begin
+              $1.camelize.constantize.nest_attributes(sub_key => v)
+            rescue NameError
+              {sub_key => v}
+            end
+
+            memo[nested_key][index].deep_merge! sub_attributes
           end
 
           memo
