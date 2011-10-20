@@ -4,6 +4,7 @@ require "active_support/core_ext/string/encoding"
 require "active_support/core_ext/hash/keys"
 
 require "importer/action_dispatch_ext/http/to_attributes/csv"
+require "importer/action_dispatch_ext/http/to_attributes/html"
 
 module ActionDispatch
   module Http
@@ -11,6 +12,7 @@ module ActionDispatch
     module ToAttributes
 
       include CSV
+      include HTML
 
       def to_attributes
         method = content_type_to_attributes_method
