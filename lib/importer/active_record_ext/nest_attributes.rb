@@ -35,6 +35,87 @@ module Importer
 
     end
 
-    ::ActiveRecord::Base.extend(NestAttributes)
+    module PrepareNestesAttributes
+
+      def prepare_nested_attributes(attributes)
+        h = {}
+
+        attributes.each do |k, v|
+
+          if k == "services_attributes"
+
+            v.each do |s_k, s_v|
+
+              s = services.detect {|s| s.name == s_v["name"]}
+
+              if s
+
+                h["services_attributes"] ||= {}
+                h["services_attributes"][s_k] ||= {}
+                h["services_attributes"][s_k] = s_v.merge({"id" => s.id.to_s})
+
+                s_v.each do |sss_k, sss_v|
+                  if sss_k == "sub_services_attributes"
+
+                    sss_v.each do |ss_k, ss_v|
+                      ss = s.sub_services.detect {|ss| ss.name == ss_v["name"]}
+
+                      if ss
+                        h["services_attributes"] ||= {}
+                        h["services_attributes"][s_k] ||= {}
+                        h["services_attributes"][s_k]["sub_services_attributes"] ||= {}
+                        h["services_attributes"][s_k]["sub_services_attributes"][ss_k] = ss_v.merge({"id" => ss.id.to_s})
+                      else
+                        h["services_attributes"][s_k] ||= {}
+                        h["services_attributes"][s_k].merge(s_v)
+                      end
+
+                    end
+
+                  else
+                    h["services_attributes"] ||= {}
+                    h["services_attributes"][s_k] ||= {}
+                    h["services_attributes"][s_k][sss_k] = sss_v
+                  end
+                end
+
+              else
+                h[k] ||= {}
+                h[k].merge!(v)
+              end
+
+            end
+          elsif k == "courses_attributes"
+
+            v.each do |s_k, s_v|
+
+              course = courses.detect {|c| c.name == s_v["name"]}
+
+              if course
+                h["courses_attributes"] ||= {}
+                h["courses_attributes"][s_k] ||= {}
+                h["courses_attributes"][s_k] = s_v.merge({"id" => course.id.to_s})
+              else
+                h[k] ||= {}
+                h[k].merge!(v)
+              end
+            end
+
+          else
+            h[k] = v
+          end
+
+        end
+
+        h
+      end
+
+    end
+
   end
+end
+
+class ActiveRecord::Base
+  extend Importer::ActiveRecord::NestAttributes
+  include Importer::ActiveRecord::PrepareNestesAttributes
 end
