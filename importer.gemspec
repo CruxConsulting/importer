@@ -3,6 +3,7 @@ Gem::Specification.new do |s|
   s.version = "0.0.1"
   s.date = %q{2011-10-20}
   s.summary = %q{importer desc}
+  s.authors = ["Crux Consulting"]
   s.files = [
     "VERSION",
     "lib/importer.rb",
