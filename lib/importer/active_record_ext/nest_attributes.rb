@@ -86,6 +86,6 @@ module Importer
   end
 end
 
-class ActiveRecord::Base
+class ::ActiveRecord::Base
   include Importer::ActiveRecord::NestAttributes
 end
