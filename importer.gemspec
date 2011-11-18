@@ -19,8 +19,8 @@ Gem::Specification.new do |s|
     "samples/non-breaking-space.htm",
 
     "spec/spec_helper.rb",
-    "spec/importer_spec.rb"
+    "spec/uploaded_file_spec.rb"
   ]
-  
+
   s.require_paths = ["lib"]
 end
