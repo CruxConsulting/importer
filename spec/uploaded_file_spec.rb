@@ -33,5 +33,14 @@ describe ActionDispatch::Http::UploadedFile do
       uploaded_file.html_to_hashes.first.should == { :header_1 => nil }
     end
   end
+  
+  context "uploaded_file with non-breaking spaces" do
+    let(:filename) { "non-breaking-space.htm"}
+
+    it "replaces non-breaking spaces" do
+      uploaded_file.html_to_hashes.first.should == { :header_1 => "after nbsp" }
+    end
+
+  end  
 
 end
