@@ -25,8 +25,7 @@ module ActionDispatch
             else
               row = {}
               tr.xpath('td|th').each_with_index do |column, index|
-                # strip spaces, remove \n and replace non-breaking spaces with whitespace spaces
-                row[headers[index].downcase.to_sym] = column.content.strip.chomp.gsub(/\u00a0/, "") if headers[index]
+                row[headers[index].downcase.to_sym] = process_content(column.content) if headers[index]
               end
               rows << row
             end
@@ -68,6 +67,19 @@ module ActionDispatch
             end
           end
           
+        end
+        
+        # This method processes the content of a column node (ie : <td>)
+        # and applies a series of rules to transform it
+        def process_content(content)
+          
+          result = content
+            .strip                # => remove left and right spaces
+            .chomp                # => remove trailing \n
+            .gsub(/\u00a0/, "")   # => remove non-breaking spaces
+          
+          # Finally, replace empty results by nil
+          result = result.empty? ? nil : result
         end
 
       end
