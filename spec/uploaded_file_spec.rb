@@ -8,7 +8,7 @@ describe ActionDispatch::Http::UploadedFile do
   end
   subject { uploaded_file }
 
-  it "does something" do
+  it "creates empty TDs to replace colspans" do
     uploaded_file.html_to_hashes.first.should == {
       :header_1 => "value_1",
       :header_2 => "value_2",
@@ -21,5 +21,5 @@ describe ActionDispatch::Http::UploadedFile do
       :header_9 => "value_9",
     }
   end
-  
+
 end
