@@ -25,6 +25,7 @@ module ActionDispatch
             else
               row = {}
               tr.xpath('td|th').each_with_index do |column, index|
+                replace_td_elements_with_new_lines(column)
                 row[headers[index].downcase.to_sym] = process_content(column.content) if headers[index]
               end
               rows << row
@@ -41,11 +42,11 @@ module ActionDispatch
         def html_to_hashes
           doc = Nokogiri::HTML(tempfile)
           table = doc.css('table').first
-          html_table_to_hashes table rescue {}
+          html_table_to_hashes table# rescue {}
         end
-        
+
         private
-        
+
         # Excel's export does not output one TD for each header when some cells are empty
         # Insted, it generates one TD with a colspan attribute and adds the "mso-ignore:colspan" style
         # to render it correctly when you re-open the html file with excel
@@ -59,27 +60,35 @@ module ActionDispatch
         # ie : one TD with a colspan of 3 will have 2 new empty TDs added after
         def complement_tds_with_colspan(table)
           table.css("td[colspan]").each do |td_with_colspan|
-            
+
             new_tds_needed = td_with_colspan["colspan"].to_i - 1
-            
+
             new_tds_needed.times do
               td_with_colspan.after Nokogiri::XML::Node.new 'td', table.document
             end
           end
-          
+
         end
-        
+
         # This method processes the content of a column node (ie : <td>)
         # and applies a series of rules to transform it
         def process_content(content)
-          
+
           result = content
             .strip                # => remove left and right spaces
             .chomp                # => remove trailing \n
             .gsub(/\u00a0/, "")   # => remove non-breaking spaces
-          
+            .gsub(/\n +/, " ")    # =>  replace \n followed by spaces with only one space
+
           # Finally, replace empty results by nil
           result = result.empty? ? nil : result
+        end
+
+        # <br> tags present in the html file were added by Excel and should be \n chars
+        def replace_td_elements_with_new_lines(column)
+          column.xpath('br').each do |br_tag|
+            br_tag.replace(Nokogiri::XML::Text.new("\n", column.document))
+          end
         end
 
       end

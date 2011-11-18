@@ -43,4 +43,17 @@ describe ActionDispatch::Http::UploadedFile do
 
   end  
 
+  context 'uploaded_file with <br> tags and \n followed by spaces' do
+    let(:filename) { "br2nl.htm"}
+
+    it 'removes \n followed by spaces and replaces <br> with \n' do
+      uploaded_file.html_to_hashes.first.should == {
+        :header_1 => "line_1\n line_2",
+        :header_2 => "line_1\n line_2",
+        :header_3 => "this is a very long line that excel chose to cut with a new line char"
+      }
+    end
+
+  end  
+
 end
