@@ -8,7 +8,7 @@ module ActionDispatch
         def csv_to_hashes
           rows = []
 
-          ::CSV.foreach(tempfile.path, :headers => true, :col_sep => ";") do |row|
+          ::CSV.foreach(tempfile.path, :headers => true, :col_sep => ";", encoding: "UTF-8") do |row|
             rows << row.to_hash.symbolize_keys
           end
 
