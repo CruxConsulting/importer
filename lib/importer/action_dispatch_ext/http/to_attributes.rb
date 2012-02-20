@@ -24,7 +24,12 @@ module ActionDispatch
       # and returns the method sym that should be used to convert the file's content
       # in attributes hashes to be used for model creation or updates
       def content_type_to_attributes_method
-        [content_type.split('/').last, "to_hashes"].join('_').to_sym
+        {
+          "text/html"                 => :html_to_hashes,
+          "text/csv"                  => :csv_to_hashes,
+          "text/plain"                => :csv_to_hashes,
+          "application/octet-stream"  => :csv_to_hashes
+        }[content_type]
       end
       private :content_type_to_attributes_method
 
