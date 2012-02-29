@@ -7,13 +7,14 @@ end
 class Service
   include Importer::ActiveRecord::NestAttributes
 end
-#
-# class SubService < ActiveRecord::Base
-# end
 
-describe "nest attributes" do
+class SubService
+  include Importer::ActiveRecord::NestAttributes
+end
 
-  it "first example" do
+describe "nest attributes module" do
+
+  it "should nest valid attributes" do
     a = A.new
 
     A.stub(:nested_attributes_options) { {services: {}}}
@@ -22,6 +23,19 @@ describe "nest attributes" do
 
     nested_attributes = a.nest_attributes({service_1_name: "s1"})
     nested_attributes["services_attributes"]["1"]["name"].should == "s1"
+  end
+
+  it "should add :id key for existing records" do
+    a = A.new
+
+    A.stub(:nested_attributes_options) { {services: {}}}
+    a.stub(:nested_attributes_options) { {services: {}}}
+    service_double = double(id: 100, name: "s1", nest_attributes: {"name"=>"s1"})
+    a.stub(:services) {[service_double]}
+
+    service_double.should_receive(:id)
+    nested_attributes = a.nest_attributes({service_1_name: "s1"})
+    nested_attributes["services_attributes"]["1"]["id"].should == "100"
   end
 
 end
