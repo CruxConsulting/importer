@@ -54,4 +54,23 @@ describe "nest attributes module" do
     nested_attributes["services_attributes"]["1"]["sub_services_attributes"]["1"]["name"].should == "ss1"
   end
 
+  it "should not crush existing record ids when deep nesting (issue-104)" do
+    a = A.new
+
+    A.stub(:nested_attributes_options) { {services: {}}}
+    a.stub(:nested_attributes_options) { {services: {}}}
+    service_double = double(id: 100, name: "s1", nest_attributes: {"name"=>"s1"})
+    a.stub(:services) {[service_double]}
+
+    Service.stub(:nested_attributes_options) { {sub_services: {}}}
+
+    nested_attributes = a.nest_attributes({
+      service_1_name: "s1",
+      service_1_sub_service_1_name: "ss1",
+      service_2_sub_service_1_name: nil
+    })
+    nested_attributes["services_attributes"]["1"]["id"].should == "100"
+  end
+
+
 end
