@@ -1,75 +1,60 @@
 require 'spec_helper'
 
-class A
-  include Importer::ActiveRecord::NestAttributes
-end
-
-class Service
-  include Importer::ActiveRecord::NestAttributes
-end
-
-class SubService
-  include Importer::ActiveRecord::NestAttributes
-end
+class A; include Importer::ActiveRecord::NestAttributes; end
+class Service; include Importer::ActiveRecord::NestAttributes; end
+class SubService; include Importer::ActiveRecord::NestAttributes; end
 
 describe "nest attributes module" do
 
-  it "should nest valid attributes" do
-    a = A.new
+  let(:a) { A.new }
 
-    A.stub(:nested_attributes_options) { {services: {}}}
-    a.stub(:nested_attributes_options) { {services: {}}}
-    a.stub(:services) {[]}
+  describe "1 level nesting" do
 
-    nested_attributes = a.nest_attributes({service_1_name: "s1"})
-    nested_attributes["services_attributes"]["1"]["name"].should == "s1"
-  end
+    before do
+      A.stub(:nested_attributes_options) { {services: {}}}
+      a.stub(:nested_attributes_options) { {services: {}}}
+      a.stub(:services) { @services || [] }
+    end
 
-  it "should add :id key for existing records" do
-    a = A.new
+    it "should nest valid attributes" do
+      nested_attributes = a.nest_attributes({service_1_name: "s1"})
+      nested_attributes["services_attributes"]["1"]["name"].should == "s1"
+    end
 
-    A.stub(:nested_attributes_options) { {services: {}}}
-    a.stub(:nested_attributes_options) { {services: {}}}
-    service_double = double(id: 100, name: "s1", nest_attributes: {"name"=>"s1"})
-    a.stub(:services) {[service_double]}
+    it "should add :id key for existing records" do
+      service_double = double(id: 100, name: "s1", nest_attributes: {"name"=>"s1"})
+      @services = [service_double]
+      service_double.should_receive(:id)
+      nested_attributes = a.nest_attributes({service_1_name: "s1"})
+      nested_attributes["services_attributes"]["1"]["id"].should == "100"
+    end
 
-    service_double.should_receive(:id)
-    nested_attributes = a.nest_attributes({service_1_name: "s1"})
-    nested_attributes["services_attributes"]["1"]["id"].should == "100"
-  end
+    describe "deep nesting" do
 
-  it "should deep nest attributes" do
-    a = A.new
+      before { Service.stub(:nested_attributes_options) { {sub_services: {}}} }
 
-    A.stub(:nested_attributes_options) { {services: {}}}
-    a.stub(:nested_attributes_options) { {services: {}}}
-    a.stub(:services) {[]}
+      it "should deep nest attributes" do
+        nested_attributes = a.nest_attributes({
+          service_1_name: "s1",
+          service_1_sub_service_1_name: "ss1"
+        })
+        nested_attributes["services_attributes"]["1"]["sub_services_attributes"]["1"]["name"].should == "ss1"
+      end
 
-    Service.stub(:nested_attributes_options) { {sub_services: {}}}
+      it "should not crush existing record ids when deep nesting (issue-104)" do
+        service_double = double(id: 100, name: "s1", nest_attributes: {"name"=>"s1"})
+        @services = [service_double]
 
-    nested_attributes = a.nest_attributes({
-      service_1_name: "s1",
-      service_1_sub_service_1_name: "ss1"
-    })
-    nested_attributes["services_attributes"]["1"]["sub_services_attributes"]["1"]["name"].should == "ss1"
-  end
+        nested_attributes = a.nest_attributes({
+          service_1_name: "s1",
+          service_1_sub_service_1_name: "ss1",
+          service_2_sub_service_1_name: nil
+        })
+        nested_attributes["services_attributes"]["1"]["id"].should == "100"
+      end
 
-  it "should not crush existing record ids when deep nesting (issue-104)" do
-    a = A.new
+    end
 
-    A.stub(:nested_attributes_options) { {services: {}}}
-    a.stub(:nested_attributes_options) { {services: {}}}
-    service_double = double(id: 100, name: "s1", nest_attributes: {"name"=>"s1"})
-    a.stub(:services) {[service_double]}
-
-    Service.stub(:nested_attributes_options) { {sub_services: {}}}
-
-    nested_attributes = a.nest_attributes({
-      service_1_name: "s1",
-      service_1_sub_service_1_name: "ss1",
-      service_2_sub_service_1_name: nil
-    })
-    nested_attributes["services_attributes"]["1"]["id"].should == "100"
   end
 
 
