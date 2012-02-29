@@ -38,4 +38,20 @@ describe "nest attributes module" do
     nested_attributes["services_attributes"]["1"]["id"].should == "100"
   end
 
+  it "should deep nest attributes" do
+    a = A.new
+
+    A.stub(:nested_attributes_options) { {services: {}}}
+    a.stub(:nested_attributes_options) { {services: {}}}
+    a.stub(:services) {[]}
+
+    Service.stub(:nested_attributes_options) { {sub_services: {}}}
+
+    nested_attributes = a.nest_attributes({
+      service_1_name: "s1",
+      service_1_sub_service_1_name: "ss1"
+    })
+    nested_attributes["services_attributes"]["1"]["sub_services_attributes"]["1"]["name"].should == "ss1"
+  end
+
 end
