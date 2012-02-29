@@ -4,3 +4,4 @@ gem 'activerecord'
 gem 'actionpack'
 gem "rspec"
 gem "nokogiri"
+gem "guard-rspec"
