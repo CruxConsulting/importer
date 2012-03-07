@@ -25,10 +25,12 @@ module ActionDispatch
       # in attributes hashes to be used for model creation or updates
       def content_type_to_attributes_method
         {
-          "text/html"                 => :html_to_hashes,
-          "text/csv"                  => :csv_to_hashes,
-          "text/plain"                => :csv_to_hashes,
-          "application/octet-stream"  => :csv_to_hashes
+          "text/html"                   => :html_to_hashes,
+          "text/csv"                    => :csv_to_hashes,
+          "text/plain"                  => :csv_to_hashes,
+          "application/octet-stream"    => :csv_to_hashes,
+          "text/comma-separated-values" => :csv_to_hashes,
+          "application/vnd.ms-excel"    => :csv_to_hashes
         }[content_type]
       end
       private :content_type_to_attributes_method
